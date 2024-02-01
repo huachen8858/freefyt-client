@@ -1,6 +1,6 @@
 Using React Next.js (v14.0.1) and Node (v20.9.0) develop FreeFYT fitness website.
 
-Node: https://github.com/huachen8858/freefyt-server
+Backend(Node): https://github.com/huachen8858/freefyt-server
 
 
 使用 React (Next.js 14.0.1) 和 Node (v20.9.0) 開發的 FreeFYT 健身網站
