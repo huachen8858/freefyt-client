@@ -7,7 +7,7 @@ import slides from '@/data/swiper.json'
 import ProductCard from '@/components/store/product/product-card'
 
 export default function InfiniteProducts() {
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState({ rows: [], page: 1 })
   const [productImages, setProductImages] = useState([])
   const [keyword, setKeyword] = useState('')
   const [sortBy, setSortBy] = useState('latest')
@@ -17,25 +17,24 @@ export default function InfiniteProducts() {
     main_category: +router.query.main_category || '',
     category: +router.query.category || '',
     keyword: router.query.keyword || '',
-    sortBy: router.query.sortBy || '',
+    sortBy: router.query.sortBy || 'latest',
     foodBrand: +router.query.foodBrand || '',
   })
-  const [popularProducts, setpopularProducts] = useState([])
   const [selectedSubValue, setSelectedSubValue] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
-  const [page, setPage] = useState(2)
+  const [page, setPage] = useState(1)
 
-  const fetchMoreProducts = async () => {
+  const fetchProducts = async (pageNumber) => {
     setIsFetching(true)
     try {
-      const response = await fetch(`${PRODUCT_LIST}?page=${page}`)
+      const response = await fetch(`${PRODUCT_LIST}?page=${pageNumber}`)
       const data = await response.json()
       if (data.success) {
         setProducts((prevProducts) => ({
-          ...data,
+          ...prevProducts,
           rows: [...prevProducts.rows, ...data.rows],
-          page: page,
+          page: pageNumber,
         }))
       }
     } catch (error) {
@@ -45,23 +44,32 @@ export default function InfiniteProducts() {
     }
   }
 
+  const fetchMoreProducts = () => {
+    const nextPage = page + 1
+    fetchProducts(nextPage)
+    setPage(nextPage)
+  }
+
   // Function to handle scroll event
   const handleScroll = () => {
     if (
       window.innerHeight + document.documentElement.scrollTop ===
       document.documentElement.offsetHeight
     ) {
-      setPage((prevPage) => prevPage + 1)
       fetchMoreProducts()
     }
   }
+
+  useEffect(() => {
+    fetchProducts(1)
+  }, [])
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll)
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [page])
+  }, [page, router.query])
 
   // 取得商品資訊
   // const getProducts = async () => {
@@ -205,10 +213,6 @@ export default function InfiniteProducts() {
       ? styles['btn-subcategory-active']
       : styles['btn-subcategory']
   }
-
-  useEffect(() => {
-    // getProducts()
-  }, [router.query])
 
   // 如果有拿到資料就去設定圖片
   useEffect(() => {
